@@ -154,12 +154,18 @@
   .card-name{font-family:var(--font-display);font-weight:600;font-size:17px;line-height:1.15;}
   .card-seg{font-family:var(--font-mono);font-size:10.5px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.4px;margin-top:2px;}
   .card-addr{font-size:12.5px;color:var(--text-muted);margin-top:8px;line-height:1.5;}
+  .card-contact{display:flex;gap:14px;flex-wrap:wrap;margin-top:8px;font-size:12px;}
+  .card-contact span,.card-contact a{display:flex;align-items:center;gap:5px;color:var(--text-muted);text-decoration:none;}
+  .card-contact a{color:var(--accent);}
+  .card-contact a:hover{text-decoration:underline;}
   .card-tags{display:flex;gap:5px;flex-wrap:wrap;margin-top:8px;}
   .tag{
     font-family:var(--font-mono);font-size:9.5px;letter-spacing:.3px;
     padding:3px 7px;border-radius:4px;background:var(--panel-3);color:var(--text-muted);
     text-transform:uppercase;
   }
+  .tag-target{background:var(--accent-dim);color:var(--accent);border:1px solid var(--accent-line);}
+  .tag-empty{opacity:.6;font-style:italic;text-transform:none;}
   .status-pill{
     font-family:var(--font-mono);font-size:10.5px;letter-spacing:.3px;
     padding:4px 9px;border-radius:100px;white-space:nowrap;
@@ -214,6 +220,15 @@
     padding:9px 11px;border-radius:8px;font-family:var(--font-body);font-size:13.5px;
   }
   .field textarea{resize:vertical;min-height:60px;}
+  .target-check-row{display:flex;gap:8px;flex-wrap:wrap;}
+  .check-pill{
+    display:flex;align-items:center;gap:6px;
+    font-size:12.5px;color:var(--text-muted);
+    background:var(--panel-2);border:1px solid var(--border);
+    padding:8px 12px;border-radius:8px;cursor:pointer;user-select:none;
+  }
+  .check-pill input{accent-color:var(--accent);cursor:pointer;}
+  .check-pill:has(input:checked){color:var(--text);border-color:var(--accent-line);background:var(--accent-dim);}
   .field-row{display:flex;gap:10px;}
   .field-row .field{flex:1;}
   .modal-actions{display:flex;justify-content:space-between;align-items:center;margin-top:18px;gap:10px;}
@@ -263,7 +278,7 @@
 <div class="modal-overlay hidden" id="modalOverlay">
   <div class="modal">
     <h2 id="modalTitle">Nova empresa</h2>
-    <p class="sub">Departamentos-alvo sugeridos: Expedição &middot; Produção &middot; Facilities</p>
+    <p class="sub">Marque onde podemos atacar dentro da empresa</p>
     <form id="companyForm">
       <div class="field"><label>Nome da empresa</label><input type="text" id="f-name" required></div>
       <div class="field-row">
@@ -271,11 +286,20 @@
         <div class="field"><label>Bairro / Distrito</label><input type="text" id="f-district" placeholder="Ex: D.I. Piemonte"></div>
       </div>
       <div class="field"><label>Endereço completo</label><input type="text" id="f-address" placeholder="Rua, número"></div>
+      <div class="field">
+        <label>Onde podemos atacar</label>
+        <div class="target-check-row" id="targetChecks">
+          <label class="check-pill"><input type="checkbox" value="Expedição"> Expedição</label>
+          <label class="check-pill"><input type="checkbox" value="Produção"> Produção</label>
+          <label class="check-pill"><input type="checkbox" value="Facilities"> Facilities</label>
+        </div>
+      </div>
       <div class="field-row">
         <div class="field"><label>Telefone / contato</label><input type="text" id="f-phone" placeholder="(31) 90000-0000"></div>
-        <div class="field"><label>Status</label>
-          <select id="f-status"></select>
-        </div>
+        <div class="field"><label>Site da empresa</label><input type="text" id="f-website" placeholder="www.empresa.com.br"></div>
+      </div>
+      <div class="field"><label>Status</label>
+        <select id="f-status"></select>
       </div>
       <div class="field"><label>Observações</label><textarea id="f-notes" placeholder="Nome do contato, melhor horário, etc."></textarea></div>
       <div class="modal-actions">
@@ -348,8 +372,13 @@ async function loadCompanies(cityKey){
     if(!companies.length) throw new Error('empty');
   }catch(e){
     companies = CITIES[cityKey].seed.map(c=>({...c, status:'none', notes:''}));
-    await saveCompanies();
   }
+  let needsSave = false;
+  companies.forEach(c=>{
+    if(!Array.isArray(c.targets)){ c.targets = []; needsSave = true; }
+    if(typeof c.website !== 'string'){ c.website = ''; needsSave = true; }
+  });
+  if(needsSave) await saveCompanies();
 }
 async function saveCompanies(){
   try{
@@ -451,8 +480,14 @@ function renderList(){
         </div>
         <div class="status-pill" style="--pill-color:${statusColor(c.status)}"><span class="dot"></span>${s.label}</div>
       </div>
-      <div class="card-addr">${escapeHtml(c.district||'')}${c.district&&c.address?' &middot; ':''}${escapeHtml(c.address||'')}${c.phone?'<br>'+escapeHtml(c.phone):''}</div>
-      <div class="card-tags"><span class="tag">Expedição</span><span class="tag">Produção</span><span class="tag">Facilities</span></div>
+      <div class="card-addr">${escapeHtml(c.district||'')}${c.district&&c.address?' &middot; ':''}${escapeHtml(c.address||'')}</div>
+      <div class="card-contact">
+        ${c.phone?`<span><i class="ti ti-phone"></i> ${escapeHtml(c.phone)}</span>`:''}
+        ${c.website?`<a href="${normalizeUrl(c.website)}" target="_blank" rel="noopener" onclick="event.stopPropagation()"><i class="ti ti-world"></i> ${escapeHtml(c.website)}</a>`:''}
+      </div>
+      <div class="card-tags">
+        ${(c.targets&&c.targets.length) ? c.targets.map(t=>`<span class="tag tag-target">${escapeHtml(t)}</span>`).join('') : '<span class="tag tag-empty">Alvo não definido</span>'}
+      </div>
       <div class="card-actions">
         <select class="status-select" data-id="${c.id}">
           ${STATUSES.map(st=>`<option value="${st.key}" ${st.key===c.status?'selected':''}>${st.label}</option>`).join('')}
@@ -481,6 +516,11 @@ function renderList(){
 
 function escapeHtml(str){
   return String(str||'').replace(/[&<>"']/g, m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+}
+function normalizeUrl(url){
+  const u = String(url||'').trim();
+  if(!u) return '#';
+  return /^https?:\/\//i.test(u) ? u : 'https://' + u;
 }
 
 /* ============ STATUS CHANGE ============ */
@@ -521,9 +561,15 @@ function renderMarkers(){
     const s = STATUS_MAP[c.status];
     const marker = L.marker([c.lat,c.lng], {icon:pinIcon(statusColor(c.status))});
     marker.bindPopup(`
-      <div style="font-family:'Inter',sans-serif;min-width:180px;">
+      <div style="font-family:'Inter',sans-serif;min-width:210px;max-width:240px;">
         <div style="font-family:'Inter',sans-serif;font-weight:700;font-size:15px;margin-bottom:2px;">${escapeHtml(c.name)}</div>
+        <div style="font-size:11px;color:#7a92a8;text-transform:uppercase;letter-spacing:.3px;margin-bottom:4px;">${escapeHtml(c.segment||'—')}</div>
         <div style="font-size:11.5px;color:#7a92a8;margin-bottom:8px;">${escapeHtml(c.district||'')}</div>
+        <div style="display:flex;gap:4px;flex-wrap:wrap;margin-bottom:8px;">
+          ${(c.targets&&c.targets.length) ? c.targets.map(t=>`<span style="font-size:9.5px;text-transform:uppercase;letter-spacing:.3px;padding:3px 7px;border-radius:4px;background:rgba(0,212,216,.10);color:#00d4d8;border:1px solid rgba(0,212,216,.25);">${escapeHtml(t)}</span>`).join('') : '<span style="font-size:10.5px;color:#4a6070;font-style:italic;">Alvo não definido</span>'}
+        </div>
+        ${c.phone?`<div style="font-size:11.5px;color:#7a92a8;margin-bottom:3px;">📞 ${escapeHtml(c.phone)}</div>`:''}
+        ${c.website?`<div style="font-size:11.5px;margin-bottom:8px;"><a href="${normalizeUrl(c.website)}" target="_blank" rel="noopener" style="color:#00d4d8;">${escapeHtml(c.website)}</a></div>`:''}
         <select class="popup-status" data-id="${c.id}" style="width:100%;font-family:'Inter',sans-serif;font-weight:600;font-size:11px;padding:5px;border-radius:6px;background:#141f2c;color:#ffffff;border:1px solid rgba(255,255,255,.12);">
           ${STATUSES.map(st=>`<option value="${st.key}" ${st.key===c.status?'selected':''}>${st.label}</option>`).join('')}
         </select>
@@ -564,6 +610,7 @@ function openModal(id){
   editingId = id || null;
   fillStatusSelect();
   document.getElementById('deleteBtn').style.display = id ? 'inline-block' : 'none';
+  const checks = document.querySelectorAll('#targetChecks input[type=checkbox]');
   if(id){
     const c = companies.find(c=>c.id===id);
     document.getElementById('modalTitle').textContent = 'Editar empresa';
@@ -572,12 +619,15 @@ function openModal(id){
     document.getElementById('f-district').value = c.district||'';
     document.getElementById('f-address').value = c.address||'';
     document.getElementById('f-phone').value = c.phone||'';
+    document.getElementById('f-website').value = c.website||'';
     document.getElementById('f-status').value = c.status||'none';
     document.getElementById('f-notes').value = c.notes||'';
+    checks.forEach(ch=> ch.checked = (c.targets||[]).includes(ch.value));
   }else{
     document.getElementById('modalTitle').textContent = 'Nova empresa';
     form.reset();
     document.getElementById('f-status').value = 'none';
+    checks.forEach(ch=> ch.checked = false);
   }
   overlay.classList.remove('hidden');
 }
@@ -589,14 +639,17 @@ overlay.addEventListener('click', e=>{ if(e.target===overlay) closeModal(); });
 
 form.addEventListener('submit', async e=>{
   e.preventDefault();
+  const targets = Array.from(document.querySelectorAll('#targetChecks input[type=checkbox]:checked')).map(ch=>ch.value);
   const data = {
     name: document.getElementById('f-name').value.trim(),
     segment: document.getElementById('f-segment').value.trim(),
     district: document.getElementById('f-district').value.trim(),
     address: document.getElementById('f-address').value.trim(),
     phone: document.getElementById('f-phone').value.trim(),
+    website: document.getElementById('f-website').value.trim(),
     status: document.getElementById('f-status').value,
-    notes: document.getElementById('f-notes').value.trim()
+    notes: document.getElementById('f-notes').value.trim(),
+    targets
   };
   if(!data.name) return;
 
