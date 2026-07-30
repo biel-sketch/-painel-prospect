@@ -74,10 +74,14 @@
   }
   .service-badge{
     margin-left:4px;
-    font-family:var(--font-mono);font-size:11px;letter-spacing:.5px;
+    font-family:var(--font-mono);font-size:11px;letter-spacing:.5px;font-weight:600;
     color:var(--accent);border:1px solid var(--accent-line);background:var(--accent-dim);
-    padding:5px 10px;border-radius:100px;text-transform:uppercase;white-space:nowrap;
+    padding:6px 28px 6px 12px;border-radius:100px;text-transform:uppercase;white-space:nowrap;
+    cursor:pointer;appearance:none;-webkit-appearance:none;
+    background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 24 24' fill='none' stroke='%2300d4d8' stroke-width='3'><path d='M6 9l6 6 6-6'/></svg>");
+    background-repeat:no-repeat;background-position:right 10px center;
   }
+  .service-badge option{background:var(--panel-2);color:var(--text);text-transform:none;}
   .city-tabs{display:flex;gap:6px;margin-left:auto;flex-wrap:wrap;}
   .city-tab{
     font-family:var(--font-mono);font-size:12px;letter-spacing:.4px;
@@ -254,7 +258,9 @@
         <span>Central Comercial &middot; Multi-cidades</span>
       </div>
     </div>
-    <div class="service-badge">Serviço: Reforma de Paletes</div>
+    <select class="service-badge" id="segmentFilter">
+      <option value="">Todos os Segmentos</option>
+    </select>
     <div class="city-tabs" id="cityTabs"></div>
   </header>
 
@@ -494,13 +500,25 @@ function renderChips(){
 }
 
 /* ============ FILTER LOGIC ============ */
+let segmentFilter = '';
 function filteredCompanies(){
   const term = searchTerm.trim().toLowerCase();
   return companies.filter(c=>{
     if(!activeStatusFilters.has(c.status)) return false;
+    if(segmentFilter && c.segment !== segmentFilter) return false;
     if(!term) return true;
     return (c.name+' '+c.district+' '+c.address+' '+c.segment).toLowerCase().includes(term);
   });
+}
+
+function renderSegmentFilter(){
+  const sel = document.getElementById('segmentFilter');
+  const segments = Array.from(new Set(companies.map(c=>c.segment).filter(Boolean))).sort();
+  const current = sel.value;
+  sel.innerHTML = '<option value="">Todos os Segmentos</option>' +
+    segments.map(s=>`<option value="${escapeHtml(s)}">${escapeHtml(s)}</option>`).join('');
+  sel.value = segments.includes(current) ? current : '';
+  segmentFilter = sel.value;
 }
 
 /* ============ RENDER: LIST ============ */
@@ -729,9 +747,14 @@ document.getElementById('searchInput').addEventListener('input', e=>{
   searchTerm = e.target.value;
   renderList(); renderMarkers();
 });
+document.getElementById('segmentFilter').addEventListener('change', e=>{
+  segmentFilter = e.target.value;
+  renderList(); renderMarkers();
+});
 
 /* ============ INIT ============ */
 function renderAll(){
+  renderSegmentFilter();
   renderStats();
   renderChips();
   renderList();
