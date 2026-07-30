@@ -237,13 +237,35 @@
   .field-row .field{flex:1;}
   .modal-actions{display:flex;justify-content:space-between;align-items:center;margin-top:18px;gap:10px;}
 
-  @media (max-width:900px){
-    .layout{grid-template-columns:1fr;grid-template-rows:38vh 1fr;}
+  @media (max-width:1024px){
+    .layout{grid-template-columns:1fr;grid-template-rows:34vh 1fr;}
     .map-col{border-right:none;border-bottom:1px solid var(--border);}
-    .stat{min-width:96px;padding:10px 12px;}
+    .stats-board{overflow-x:auto;-webkit-overflow-scrolling:touch;}
+    .stat{min-width:92px;padding:10px 12px;flex-shrink:0;}
     .stat-num{font-size:20px;}
-    .topbar{gap:12px;}
-    .city-tabs{margin-left:0;}
+    .topbar{gap:10px;padding:12px 14px;}
+    .brand-text h1{font-size:19px;}
+    .service-badge{font-size:10.5px;padding:7px 26px 7px 10px;}
+    .city-tabs{margin-left:0;width:100%;}
+    .city-tab{flex:1;text-align:center;padding:10px 8px;}
+
+    .filters{padding:12px;}
+    .search-row{flex-wrap:wrap;}
+    .search-row input{min-width:0;flex:1 1 100%;padding:11px 12px;font-size:16px;}
+    .search-row .btn{flex:1 1 100%;padding:12px;font-size:14px;}
+    .status-chips{gap:8px;}
+    .chip{padding:8px 12px;font-size:12px;}
+
+    .card{padding:14px;}
+    .card-name{font-size:18px;}
+    .card-actions{gap:8px;}
+    .status-select{flex:1 1 100%;padding:10px;font-size:13px;}
+    .icon-btn{padding:9px 12px;font-size:13px;flex:1;justify-content:center;}
+
+    .modal{max-width:100%;border-radius:14px 14px 0 0;position:fixed;bottom:0;left:0;right:0;max-height:88vh;}
+    .modal-overlay{align-items:flex-end;padding:0;}
+    .field input,.field select,.field textarea{padding:11px 12px;font-size:16px;}
+    .check-pill{padding:10px 14px;font-size:13px;}
   }
 </style>
 </head>
