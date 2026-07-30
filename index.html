@@ -514,9 +514,10 @@ function filteredCompanies(){
 
 function renderSegmentFilter(){
   const sel = document.getElementById('segmentFilter');
-  if(sel.options.length) return; // lista fixa, monta só uma vez
+  if(sel.dataset.built) return;
   sel.innerHTML = '<option value="">Todos os Segmentos</option>' +
     ATTACK_SEGMENTS.map(s=>`<option value="${escapeHtml(s)}">${escapeHtml(s)}</option>`).join('');
+  sel.dataset.built = '1';
 }
 
 /* ============ RENDER: LIST ============ */
