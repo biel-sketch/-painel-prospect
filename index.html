@@ -500,12 +500,13 @@ function renderChips(){
 }
 
 /* ============ FILTER LOGIC ============ */
+const ATTACK_SEGMENTS = ['Expedição','Produção','Facilities','Reforma de Paletes'];
 let segmentFilter = '';
 function filteredCompanies(){
   const term = searchTerm.trim().toLowerCase();
   return companies.filter(c=>{
     if(!activeStatusFilters.has(c.status)) return false;
-    if(segmentFilter && c.segment !== segmentFilter) return false;
+    if(segmentFilter && segmentFilter!=='Reforma de Paletes' && !(c.targets||[]).includes(segmentFilter)) return false;
     if(!term) return true;
     return (c.name+' '+c.district+' '+c.address+' '+c.segment).toLowerCase().includes(term);
   });
@@ -513,12 +514,9 @@ function filteredCompanies(){
 
 function renderSegmentFilter(){
   const sel = document.getElementById('segmentFilter');
-  const segments = Array.from(new Set(companies.map(c=>c.segment).filter(Boolean))).sort();
-  const current = sel.value;
+  if(sel.options.length) return; // lista fixa, monta só uma vez
   sel.innerHTML = '<option value="">Todos os Segmentos</option>' +
-    segments.map(s=>`<option value="${escapeHtml(s)}">${escapeHtml(s)}</option>`).join('');
-  sel.value = segments.includes(current) ? current : '';
-  segmentFilter = sel.value;
+    ATTACK_SEGMENTS.map(s=>`<option value="${escapeHtml(s)}">${escapeHtml(s)}</option>`).join('');
 }
 
 /* ============ RENDER: LIST ============ */
