@@ -336,20 +336,20 @@ const CITIES = {
   betim: {
     name:'Betim', state:'MG', center:[-19.9678,-44.1985], zoom:12, active:true,
     seed:[
-      {id:'bt-01', name:'Nutep S/A Indústria Metalúrgica', segment:'Metalurgia', district:'D.I. Jardim Piemonte Norte', address:'Rua Toledo, 180', lat:-19.9438, lng:-44.1795, phone:''},
-      {id:'bt-02', name:'Metalúrgica Granato (Granatolaser)', segment:'Metalurgia / Corte a Laser', district:'D.I. Jardim Piemonte Norte', address:'Distrito Industrial Jardim Piemonte', lat:-19.9452, lng:-44.1802, phone:''},
-      {id:'bt-03', name:'Rads Metalúrgica Ltda', segment:'Metalurgia', district:'D.I. Jardim Piemonte Norte', address:'Rua Transbrasil, 1169', lat:-19.9425, lng:-44.1775, phone:''},
-      {id:'bt-04', name:'Weir Minerals Brasil', segment:'Equipamentos Industriais', district:'D.I. Paulo Camilo Sul', address:'Rua Engenheiro Gerhard Ett, 1215', lat:-19.9978, lng:-44.1522, phone:''},
-      {id:'bt-05', name:'Pharmascience Indústria Farmacêutica', segment:'Farmacêutico', district:'Betim', address:'A confirmar', lat:-19.9602, lng:-44.1889, phone:''},
-      {id:'bt-06', name:'Opus Indústria de Construções Modulares', segment:'Construção Modular', district:'Betim', address:'A confirmar', lat:-19.9715, lng:-44.2050, phone:''},
-      {id:'bt-07', name:'Fiasa - Ferro e Aço Industrial', segment:'Siderurgia', district:'D.I. Paulo Camilo Norte', address:'Rua Senador Giovanni Agnelli, 230', lat:-19.9918, lng:-44.1558, phone:''},
-      {id:'bt-08', name:'Tupy Minas Gerais Ltda', segment:'Fundição / Metalurgia', district:'Betim', address:'A confirmar', lat:-19.9850, lng:-44.1700, phone:''},
-      {id:'bt-09', name:'Metalsider Ltda', segment:'Metalurgia', district:'D.I. Jardim Piemonte Sul', address:'Rua Moacyr Gonçalves Costa, 15', lat:-19.9508, lng:-44.1826, phone:''},
-      {id:'bt-10', name:'Minas Padrão Indústria e Comércio', segment:'Indústria Geral', district:'Betim', address:'A confirmar', lat:-19.9550, lng:-44.1920, phone:''},
-      {id:'bt-11', name:'ESCO Latin America', segment:'Indústria / Comércio', district:'D.I. Jardim Piemonte Norte', address:'Rua Gracyra Resse de Gouveia, 800', lat:-19.9461, lng:-44.1811, phone:''},
-      {id:'bt-12', name:'RM Construções e Serviços Industriais', segment:'Serviços Industriais', district:'Betim', address:'A confirmar', lat:-19.9680, lng:-44.2100, phone:''},
-      {id:'bt-13', name:'Santa Tereza Lavanderia Industrial', segment:'Higienização Industrial', district:'D.I. Bandeirinhas', address:'Av. Dois, 225', lat:-19.8988, lng:-44.2438, phone:''},
-      {id:'bt-14', name:'Stellantis (Fiat) - Planta Betim', segment:'Automotivo / Montadora', district:'Distrito Industrial', address:'Av. do Contorno, s/n', lat:-19.9315, lng:-44.1177, phone:''}
+      {id:'bt-01', name:'Nutep S/A Indústria Metalúrgica', segment:'Fabricação de peças automotivas', district:'Jardim Teresópolis', address:'Rua Campina Verde, 331D', lat:-19.9438, lng:-44.1795, phone:'(31) 3515-9200', website:'', targets:['Produção','Facilities']},
+      {id:'bt-02', name:'Metalúrgica Granato (Granatolaser)', segment:'Metalurgia / Corte a Laser', district:'D.I. Jardim Piemonte Norte', address:'A confirmar', lat:-19.9452, lng:-44.1802, phone:'', website:'', targets:['Produção']},
+      {id:'bt-03', name:'Rads Metalúrgica Ltda', segment:'Fundição de ferro e aço + fabricação de paletes metálicos', district:'São Marcos (BR-381, Km 505)', address:'Rodovia BR-381 Fernão Dias, s/n', lat:-19.9425, lng:-44.1775, phone:'(31) 3311-8111', website:'', targets:['Produção','Expedição']},
+      {id:'bt-04', name:'Weir Minerals Brasil (Weir do Brasil)', segment:'Equipamentos para mineração', district:'D.I. Paulo Camilo Sul', address:'Rua Engenheiro Gerhard Ett, 1215', lat:-19.9978, lng:-44.1522, phone:'', website:'global.weir', targets:['Produção','Expedição','Facilities']},
+      {id:'bt-05', name:'Pharmascience Indústria Farmacêutica', segment:'Fabricação/distribuição de medicamentos', district:'D.I. Jardim Piemonte Norte', address:'Rua Texaco, 640', lat:-19.9602, lng:-44.1889, phone:'(31) 3597-0442', website:'pharmascience.com.br', targets:['Expedição','Facilities']},
+      {id:'bt-06', name:'Opus Indústria de Construções Modulares', segment:'Construção Modular', district:'Betim', address:'A confirmar', lat:-19.9715, lng:-44.2050, phone:'', website:'', targets:['Produção','Expedição']},
+      {id:'bt-07', name:'Fiasa - Ferro e Aço Industrial', segment:'Siderurgia', district:'D.I. Paulo Camilo Norte', address:'Rua Senador Giovanni Agnelli, 230', lat:-19.9918, lng:-44.1558, phone:'', website:'', targets:['Produção','Expedição']},
+      {id:'bt-08', name:'Tupy Minas Gerais Ltda', segment:'Fundição / Autopeças', district:'Betim', address:'A confirmar', lat:-19.9850, lng:-44.1700, phone:'', website:'tupy.com.br', targets:['Produção','Expedição','Facilities']},
+      {id:'bt-09', name:'Metalsider Ltda', segment:'Produção de ferro-gusa', district:'Cachoeira', address:'Av. Amazonas, 2481', lat:-19.9508, lng:-44.1826, phone:'(31) 3539-9800', website:'metalsider.com.br', targets:['Produção','Facilities']},
+      {id:'bt-10', name:'Minas Padrão Indústria e Comércio', segment:'Indústria Geral', district:'Betim', address:'A confirmar', lat:-19.9550, lng:-44.1920, phone:'', website:'', targets:[]},
+      {id:'bt-11', name:'ESCO Latin America', segment:'Equipamentos para mineração', district:'D.I. Jardim Piemonte Norte', address:'Rua Gracyra Resse de Gouveia, 800', lat:-19.9461, lng:-44.1811, phone:'', website:'', targets:['Produção','Expedição']},
+      {id:'bt-12', name:'RM Construções e Serviços Industriais', segment:'Serviços Industriais', district:'Betim', address:'A confirmar', lat:-19.9680, lng:-44.2100, phone:'', website:'', targets:['Facilities']},
+      {id:'bt-13', name:'Santa Tereza Lavanderia Industrial', segment:'Higienização Industrial (uniformes e EPIs)', district:'D.I. Bandeirinhas', address:'Av. Dois, 225', lat:-19.8988, lng:-44.2438, phone:'', website:'', targets:['Facilities']},
+      {id:'bt-14', name:'Stellantis (Fiat) - Planta Betim', segment:'Automotivo / Montadora', district:'Distrito Industrial', address:'Av. do Contorno, s/n', lat:-19.9315, lng:-44.1177, phone:'', website:'stellantis.com', targets:['Produção','Expedição','Facilities']}
     ]
   },
   contagem:{name:'Contagem', state:'MG', center:[-19.9317,-44.0536], zoom:12, active:false, seed:[]},
@@ -365,25 +365,69 @@ let activeStatusFilters = new Set(STATUSES.map(s=>s.key));
 let searchTerm = '';
 
 /* ============ STORAGE ============ */
+const FB_BASE = 'https://loginserv-painel-default-rtdb.firebaseio.com';
+function fbUrl(cityKey){ return `${FB_BASE}/prospeccao_${cityKey}.json`; }
+let syncTimer = null;
+
 async function loadCompanies(cityKey){
+  let cloudData = null;
   try{
-    const res = await window.storage.get(`companies:${cityKey}`, true);
-    companies = res && res.value ? JSON.parse(res.value) : [];
-    if(!companies.length) throw new Error('empty');
-  }catch(e){
-    companies = CITIES[cityKey].seed.map(c=>({...c, status:'none', notes:''}));
+    const res = await fetch(fbUrl(cityKey));
+    if(res.ok){
+      const json = await res.json();
+      if(json && Array.isArray(json) && json.length) cloudData = json;
+    }
+  }catch(e){ /* offline ou Firebase indisponível — segue com cache local */ }
+
+  if(cloudData){
+    companies = cloudData;
+  }else{
+    try{
+      const raw = localStorage.getItem(`prospeccao:companies:${cityKey}`);
+      companies = raw ? JSON.parse(raw) : [];
+      if(!companies.length) throw new Error('empty');
+    }catch(e){
+      companies = CITIES[cityKey].seed.map(c=>({...c, status:'none', notes:''}));
+    }
   }
+
   let needsSave = false;
   companies.forEach(c=>{
     if(!Array.isArray(c.targets)){ c.targets = []; needsSave = true; }
     if(typeof c.website !== 'string'){ c.website = ''; needsSave = true; }
   });
   if(needsSave) await saveCompanies();
+  restartAutoSync();
 }
+
 async function saveCompanies(){
   try{
-    await window.storage.set(`companies:${currentCity}`, JSON.stringify(companies), true);
-  }catch(e){ console.error('Falha ao salvar', e); }
+    localStorage.setItem(`prospeccao:companies:${currentCity}`, JSON.stringify(companies));
+  }catch(e){ console.error('Falha ao salvar localmente', e); }
+  try{
+    await fetch(fbUrl(currentCity), {
+      method: 'PUT',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify(companies)
+    });
+  }catch(e){ console.error('Falha ao sincronizar com a nuvem', e); }
+}
+
+function restartAutoSync(){
+  if(syncTimer) clearInterval(syncTimer);
+  syncTimer = setInterval(async ()=>{
+    if(!overlay.classList.contains('hidden')) return; // não sobrescreve edição em andamento
+    try{
+      const res = await fetch(fbUrl(currentCity));
+      if(!res.ok) return;
+      const json = await res.json();
+      if(json && Array.isArray(json) && JSON.stringify(json)!==JSON.stringify(companies)){
+        companies = json;
+        localStorage.setItem(`prospeccao:companies:${currentCity}`, JSON.stringify(companies));
+        renderAll();
+      }
+    }catch(e){ /* silencioso */ }
+  }, 15000);
 }
 
 /* ============ RENDER: TABS ============ */
