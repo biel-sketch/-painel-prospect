@@ -194,6 +194,10 @@
     font-family:var(--font-mono);font-size:11px;background:var(--panel-2);color:var(--text);
     border:1px solid var(--border);border-radius:6px;padding:6px 8px;cursor:pointer;
   }
+  .unit-select{
+    font-family:var(--font-mono);font-size:11px;background:var(--panel-2);color:var(--text);
+    border:1px solid var(--border);border-radius:6px;padding:6px 8px;cursor:pointer;max-width:160px;
+  }
   .icon-btn{
     background:transparent;border:1px solid var(--border);color:var(--text-faint);
     border-radius:6px;padding:6px 8px;cursor:pointer;font-size:12px;
@@ -280,6 +284,7 @@
     .card-actions{gap:8px;flex-direction:column;}
     .card-actions .icon-btn{width:100%;padding:11px 12px;font-size:13.5px;}
     .status-select{flex:1 1 100%;padding:10px;font-size:13px;}
+    .unit-select{flex:1 1 100%;max-width:none;padding:10px;font-size:13px;}
     .icon-btn{padding:9px 12px;font-size:13px;flex:1;justify-content:center;}
 
     .modal{max-width:100%;border-radius:14px 14px 0 0;position:fixed;bottom:0;left:0;right:0;max-height:88vh;}
@@ -549,48 +554,93 @@ const CITIES = {
   multinacionais: {
     name:'Multinacionais', state:'BR', center:[-14.2350,-51.9253], zoom:4, active:true,
     seed:[
-      {id:'mn-01', name:'Petrobras - REPLAN', segment:'Refinaria de petróleo', district:'Paulínia', address:'Rodovia Prof. Zeferino Vaz, Km 132', lat:-22.7614, lng:-47.1544, phone:'', website:'petrobras.com.br', targets:['Produção','Expedição','Facilities'], notes:'Maior refinaria do Brasil em capacidade de processamento.'},
-      {id:'mn-02', name:'Petrobras - REVAP', segment:'Refinaria de petróleo', district:'São José dos Campos', address:'Rodovia Presidente Dutra, Km 143', lat:-23.2237, lng:-45.9009, phone:'', website:'petrobras.com.br', targets:['Produção','Expedição','Facilities'], notes:''},
-      {id:'mn-03', name:'Petrobras - REPAR', segment:'Refinaria de petróleo', district:'Araucária', address:'Rodovia do Xisto, Km 476', lat:-25.5878, lng:-49.4103, phone:'', website:'petrobras.com.br', targets:['Produção','Expedição','Facilities'], notes:''},
-      {id:'mn-04', name:'Petrobras - RNEST', segment:'Refinaria de petróleo', district:'Ipojuca', address:'Rodovia Estadual PE-60, Km 10', lat:-8.4004, lng:-35.0619, phone:'', website:'petrobras.com.br', targets:['Produção','Expedição','Facilities'], notes:''},
-      {id:'mn-05', name:'Petrobras - RPBC', segment:'Refinaria de petróleo', district:'Cubatão', address:'Rua Nove de Abril, 777', lat:-23.8947, lng:-46.4253, phone:'', website:'petrobras.com.br', targets:['Produção','Expedição','Facilities'], notes:''},
-      {id:'mn-06', name:'Gerdau Ouro Branco (Açominas)', segment:'Siderurgia — maior usina do grupo no mundo (12% do aço do Brasil)', district:'Ouro Branco', address:'A confirmar', lat:-20.5236, lng:-43.6975, phone:'', website:'gerdau.com', targets:['Produção','Expedição','Facilities'], notes:''},
-      {id:'mn-07', name:'Gerdau Charqueadas', segment:'Siderurgia', district:'Charqueadas', address:'A confirmar', lat:-29.9689, lng:-51.6244, phone:'', website:'gerdau.com', targets:['Produção','Expedição'], notes:''},
-      {id:'mn-08', name:'Gerdau Cosigua', segment:'Siderurgia', district:'Rio de Janeiro (Santa Cruz)', address:'A confirmar', lat:-22.9046, lng:-43.6857, phone:'', website:'gerdau.com', targets:['Produção','Expedição'], notes:''},
-      {id:'mn-09', name:'Gerdau Açonorte', segment:'Siderurgia', district:'Recife', address:'A confirmar', lat:-8.0476, lng:-34.8770, phone:'', website:'gerdau.com', targets:['Produção','Expedição'], notes:''},
-      {id:'mn-10', name:'Ambev Uberlândia', segment:'Cervejaria — maior fábrica de bebidas do Brasil', district:'Uberlândia', address:'A confirmar', lat:-18.9146, lng:-48.2754, phone:'', website:'ambev.com.br', targets:['Produção','Expedição','Facilities'], notes:''},
-      {id:'mn-11', name:'Ambev Jacareí', segment:'Cervejaria', district:'Jacareí', address:'A confirmar', lat:-23.3053, lng:-45.9658, phone:'', website:'ambev.com.br', targets:['Produção','Expedição'], notes:''},
-      {id:'mn-12', name:'Ambev Carambeí', segment:'Fábrica de garrafas de vidro', district:'Carambeí', address:'A confirmar', lat:-24.9167, lng:-50.1000, phone:'', website:'ambev.com.br', targets:['Produção','Expedição'], notes:''},
-      {id:'mn-13', name:'Klabin Ortigueira (Puma)', segment:'Celulose e papel', district:'Ortigueira', address:'Fazenda Apucarana Grande', lat:-24.2028, lng:-50.9422, phone:'', website:'klabin.com.br', targets:['Produção','Expedição','Facilities'], notes:''},
-      {id:'mn-14', name:'Klabin Correia Pinto', segment:'Papel para embalagens (sacos industriais)', district:'Correia Pinto', address:'BR-116, Km 218', lat:-27.5847, lng:-50.3611, phone:'', website:'klabin.com.br', targets:['Produção','Expedição'], notes:''},
-      {id:'mn-15', name:'Klabin Telêmaco Borba (Monte Alegre)', segment:'Maior complexo papeleiro da América Latina', district:'Telêmaco Borba', address:'A confirmar', lat:-24.3247, lng:-50.6178, phone:'', website:'klabin.com.br', targets:['Produção','Expedição','Facilities'], notes:''},
-      {id:'mn-16', name:'Klabin Manaus', segment:'Embalagens', district:'Manaus', address:'A confirmar', lat:-3.1190, lng:-60.0217, phone:'', website:'klabin.com.br', targets:['Produção','Expedição'], notes:''},
-      {id:'mn-17', name:'Vale Carajás', segment:'Mineração de ferro — maior complexo minerador do mundo', district:'Parauapebas', address:'A confirmar', lat:-6.0674, lng:-49.9022, phone:'', website:'vale.com', targets:['Produção','Expedição','Facilities'], notes:''},
-      {id:'mn-18', name:'Vale Itabira', segment:'Mineração de ferro', district:'Itabira', address:'A confirmar', lat:-19.6186, lng:-43.2267, phone:'', website:'vale.com', targets:['Produção','Expedição'], notes:''},
-      {id:'mn-19', name:'Vale - Porto de Tubarão', segment:'Terminal portuário/logística de minério', district:'Vitória', address:'A confirmar', lat:-20.3155, lng:-40.3128, phone:'', website:'vale.com', targets:['Expedição','Facilities'], notes:''},
-      {id:'mn-20', name:'WEG Jaraguá do Sul', segment:'Motores elétricos e automação — sede/planta principal', district:'Jaraguá do Sul', address:'A confirmar', lat:-26.4869, lng:-49.0672, phone:'', website:'weg.net', targets:['Produção','Expedição','Facilities'], notes:''},
-      {id:'mn-21', name:'WEG São Bernardo do Campo', segment:'Divisão automação/depósito', district:'São Bernardo do Campo', address:'A confirmar', lat:-23.6939, lng:-46.5650, phone:'', website:'weg.net', targets:['Produção','Expedição'], notes:''},
-      {id:'mn-22', name:'WEG Parauapebas', segment:'Energia/serviços de mineração', district:'Parauapebas', address:'A confirmar', lat:-6.0674, lng:-49.9022, phone:'', website:'weg.net', targets:['Produção','Expedição'], notes:'CNPJ 07.175.725/0044-08 confirmado.'},
-      {id:'mn-23', name:'Coca-Cola FEMSA Jundiaí', segment:'Engarrafadora — maior fábrica do sistema Coca-Cola no mundo em volume', district:'Jundiaí', address:'A confirmar', lat:-23.1857, lng:-46.8978, phone:'', website:'coca-colafemsa.com', targets:['Produção','Expedição','Facilities'], notes:''},
-      {id:'mn-24', name:'Coca-Cola FEMSA Itabirito', segment:'Engarrafadora', district:'Itabirito', address:'A confirmar', lat:-20.2544, lng:-43.8006, phone:'', website:'coca-colafemsa.com', targets:['Produção','Expedição'], notes:''},
-      {id:'mn-25', name:'Anglo American Barro Alto', segment:'Mineração de níquel', district:'Barro Alto', address:'A confirmar', lat:-15.0942, lng:-49.1728, phone:'', website:'angloamerican.com', targets:['Produção','Expedição'], notes:''},
-      {id:'mn-26', name:'Anglo American Minas-Rio', segment:'Mineração de ferro', district:'Conceição do Mato Dentro', address:'A confirmar', lat:-19.0286, lng:-43.4275, phone:'', website:'angloamerican.com', targets:['Produção','Expedição'], notes:''},
-      {id:'mn-27', name:'Vallourec Jeceaba', segment:'Tubos de aço sem costura', district:'Jeceaba', address:'Distrito Industrial, S/N', lat:-20.5389, lng:-43.9889, phone:'', website:'vallourec.com', targets:['Produção','Expedição'], notes:'CNPJ 08.689.024/0002-92 confirmado.'},
-      {id:'mn-28', name:'Suzano Três Lagoas', segment:'Celulose — um dos maiores complexos do grupo', district:'Três Lagoas', address:'A confirmar', lat:-20.7849, lng:-51.6784, phone:'', website:'suzano.com.br', targets:['Produção','Expedição','Facilities'], notes:''},
-      {id:'mn-29', name:'Suzano Ribas do Rio Pardo', segment:'Celulose — maior fábrica de linha única de eucalipto do mundo', district:'Ribas do Rio Pardo', address:'A confirmar', lat:-20.4433, lng:-53.7592, phone:'', website:'suzano.com.br', targets:['Produção','Expedição','Facilities'], notes:''},
-      {id:'mn-30', name:'Mars Brasil', segment:'Alimentos/petfood (multinacional)', district:'Guararema', address:'Rodovia Presidente Dutra', lat:-23.4136, lng:-46.0322, phone:'', website:'mars.com', targets:['Produção','Expedição'], notes:''},
-      {id:'mn-31', name:'Arcor Bragança Paulista', segment:'Balas, chocolates e biscoitos (multinacional argentina) — matriz Brasil', district:'Bragança Paulista', address:'R. Fúlvio Salvador Pagani, 3101', lat:-22.9525, lng:-46.5417, phone:'', website:'arcor.com.br', targets:['Produção','Expedição','Facilities'], notes:''},
-      {id:'mn-32', name:'Arcor Ipojuca', segment:'Balas, chicletes e pirulitos', district:'Ipojuca', address:'Rodovia PE-60, Km 12', lat:-8.4004, lng:-35.0619, phone:'(81) 3527-1520', website:'arcor.com.br', targets:['Produção','Expedição'], notes:''},
-      {id:'mn-33', name:'Nestlé Araçatuba', segment:'Laticínios (multinacional)', district:'Araçatuba', address:'A confirmar', lat:-21.2089, lng:-50.4328, phone:'', website:'nestle.com.br', targets:['Produção','Expedição'], notes:''},
-      {id:'mn-34', name:'Nestlé Caçapava', segment:'Achocolatados e alimentos infantis', district:'Caçapava', address:'A confirmar', lat:-23.0989, lng:-45.7075, phone:'', website:'nestle.com.br', targets:['Produção','Expedição','Facilities'], notes:''},
-      {id:'mn-35', name:'Mondelez Curitiba', segment:'Chocolates, biscoitos e queijo — maior fábrica multicategoria da Mondelez no mundo', district:'Curitiba', address:'Av. Juscelino Kubitschek de Oliveira, 13300', lat:-25.4284, lng:-49.2733, phone:'', website:'mondelezinternational.com', targets:['Produção','Expedição','Facilities'], notes:''},
-      {id:'mn-36', name:'Mondelez Vitória de Santo Antão', segment:'Chocolates, biscoitos e bebidas em pó', district:'Vitória de Santo Antão', address:'Rodovia Luiz Gonzaga BR-232', lat:-8.1189, lng:-35.2967, phone:'', website:'mondelezinternational.com', targets:['Produção','Expedição','Facilities'], notes:'CNPJ 10.144.076/0001-44 confirmado.'},
-      {id:'mn-37', name:'IFF Brasil (ex-Danisco)', segment:'Fabricação de aditivos de uso industrial (sabores/ingredientes)', district:'Vila Santa Rosa', address:'Rua João de Abreu, 186', lat:-22.3689, lng:-51.6142, phone:'', website:'iff.com', targets:['Produção','Expedição'], notes:'CNPJ 46.278.016/0002-42 (Pirapozinho, SP confirmado — unidade herdada da fusão com a Danisco).'},
-      {id:'mn-38', name:'Refrescos Bandeirantes Anápolis', segment:'Engarrafadora Coca-Cola', district:'Anápolis', address:'A confirmar', lat:-16.3281, lng:-48.9531, phone:'', website:'', targets:['Produção','Expedição'], notes:''},
-      {id:'mn-39', name:'Refrescos Bandeirantes Trindade', segment:'Engarrafadora Coca-Cola', district:'Trindade', address:'A confirmar', lat:-16.6499, lng:-49.4889, phone:'', website:'', targets:['Produção','Expedição'], notes:''},
-      {id:'mn-40', name:'Solar FEMSA Tangará da Serra', segment:'Engarrafadora Coca-Cola', district:'Tangará da Serra', address:'A confirmar', lat:-14.6222, lng:-57.4930, phone:'', website:'', targets:['Produção','Expedição'], notes:''},
-      {id:'mn-41', name:'Solar FEMSA Lucas do Rio Verde', segment:'Engarrafadora Coca-Cola', district:'Lucas do Rio Verde', address:'A confirmar', lat:-13.0587, lng:-55.9114, phone:'', website:'', targets:['Produção','Expedição'], notes:''},
-      {id:'mn-42', name:'Solar FEMSA Sinop', segment:'Engarrafadora Coca-Cola', district:'Sinop', address:'A confirmar', lat:-11.8642, lng:-55.5025, phone:'', website:'', targets:['Produção','Expedição'], notes:''}
+      {id:'mnx-01', name:'Petrobras', segment:'Refino de petróleo (estatal)', website:'petrobras.com.br', targets:['Produção','Expedição','Facilities'], notes:'',
+        units:[
+          {district:'Paulínia, SP', address:'Rodovia Prof. Zeferino Vaz, Km 132', lat:-22.7614, lng:-47.1544, note:'REPLAN — maior refinaria do Brasil'},
+          {district:'São José dos Campos, SP', address:'Rodovia Presidente Dutra, Km 143', lat:-23.2237, lng:-45.9009, note:'REVAP'},
+          {district:'Araucária, PR', address:'Rodovia do Xisto, Km 476', lat:-25.5878, lng:-49.4103, note:'REPAR'},
+          {district:'Ipojuca, PE', address:'Rodovia Estadual PE-60, Km 10', lat:-8.4004, lng:-35.0619, note:'RNEST'},
+          {district:'Cubatão, SP', address:'Rua Nove de Abril, 777', lat:-23.8947, lng:-46.4253, note:'RPBC'}
+        ]},
+      {id:'mnx-02', name:'Gerdau', segment:'Siderurgia (multinacional brasileira)', website:'gerdau.com', targets:['Produção','Expedição','Facilities'], notes:'',
+        units:[
+          {district:'Ouro Branco, MG', address:'A confirmar', lat:-20.5236, lng:-43.6975, note:'Açominas — maior usina do grupo no mundo (12% do aço do Brasil)'},
+          {district:'Charqueadas, RS', address:'A confirmar', lat:-29.9689, lng:-51.6244, note:''},
+          {district:'Rio de Janeiro (Santa Cruz), RJ', address:'A confirmar', lat:-22.9046, lng:-43.6857, note:'Cosigua'},
+          {district:'Recife, PE', address:'A confirmar', lat:-8.0476, lng:-34.8770, note:'Açonorte'}
+        ]},
+      {id:'mnx-03', name:'Ambev', segment:'Cervejaria/bebidas (multinacional)', website:'ambev.com.br', targets:['Produção','Expedição','Facilities'], notes:'',
+        units:[
+          {district:'Uberlândia, MG', address:'A confirmar', lat:-18.9146, lng:-48.2754, note:'Maior fábrica de bebidas do Brasil'},
+          {district:'Jacareí, SP', address:'A confirmar', lat:-23.3053, lng:-45.9658, note:''},
+          {district:'Carambeí, PR', address:'A confirmar', lat:-24.9167, lng:-50.1000, note:'Fábrica de garrafas de vidro'}
+        ]},
+      {id:'mnx-04', name:'Klabin', segment:'Celulose e papel (multinacional)', website:'klabin.com.br', targets:['Produção','Expedição','Facilities'], notes:'',
+        units:[
+          {district:'Ortigueira, PR', address:'Fazenda Apucarana Grande', lat:-24.2028, lng:-50.9422, note:'Unidade Puma'},
+          {district:'Correia Pinto, SC', address:'BR-116, Km 218', lat:-27.5847, lng:-50.3611, note:'Papel para sacos industriais'},
+          {district:'Telêmaco Borba, PR', address:'A confirmar', lat:-24.3247, lng:-50.6178, note:'Monte Alegre — maior complexo papeleiro da América Latina'},
+          {district:'Manaus, AM', address:'A confirmar', lat:-3.1190, lng:-60.0217, note:'Embalagens'}
+        ]},
+      {id:'mnx-05', name:'Vale', segment:'Mineração (multinacional brasileira)', website:'vale.com', targets:['Produção','Expedição','Facilities'], notes:'',
+        units:[
+          {district:'Parauapebas, PA', address:'A confirmar', lat:-6.0674, lng:-49.9022, note:'Carajás — maior complexo minerador do mundo'},
+          {district:'Itabira, MG', address:'A confirmar', lat:-19.6186, lng:-43.2267, note:'Mineração de ferro'},
+          {district:'Vitória, ES', address:'A confirmar', lat:-20.3155, lng:-40.3128, note:'Porto de Tubarão'}
+        ]},
+      {id:'mnx-06', name:'WEG', segment:'Motores elétricos e automação (multinacional)', website:'weg.net', targets:['Produção','Expedição','Facilities'], notes:'',
+        units:[
+          {district:'Jaraguá do Sul, SC', address:'A confirmar', lat:-26.4869, lng:-49.0672, note:'Sede/planta principal'},
+          {district:'São Bernardo do Campo, SP', address:'A confirmar', lat:-23.6939, lng:-46.5650, note:'Divisão automação/depósito'},
+          {district:'Parauapebas, PA', address:'A confirmar', lat:-6.0674, lng:-49.9022, note:'Energia/serviços de mineração — CNPJ 07.175.725/0044-08'}
+        ]},
+      {id:'mnx-07', name:'Coca-Cola FEMSA', segment:'Engarrafadora (multinacional)', website:'coca-colafemsa.com', targets:['Produção','Expedição','Facilities'], notes:'',
+        units:[
+          {district:'Jundiaí, SP', address:'A confirmar', lat:-23.1857, lng:-46.8978, note:'Maior fábrica do sistema Coca-Cola no mundo em volume'},
+          {district:'Itabirito, MG', address:'A confirmar', lat:-20.2544, lng:-43.8006, note:''}
+        ]},
+      {id:'mnx-08', name:'Anglo American', segment:'Mineração (multinacional britânica)', website:'angloamerican.com', targets:['Produção','Expedição'], notes:'',
+        units:[
+          {district:'Barro Alto, GO', address:'A confirmar', lat:-15.0942, lng:-49.1728, note:'Mineração de níquel'},
+          {district:'Conceição do Mato Dentro, MG', address:'A confirmar', lat:-19.0286, lng:-43.4275, note:'Minas-Rio — mineração de ferro'}
+        ]},
+      {id:'mnx-09', name:'Vallourec', segment:'Tubos de aço sem costura (multinacional francesa)', website:'vallourec.com', targets:['Produção','Expedição'], notes:'CNPJ 08.689.024/0002-92 confirmado.',
+        units:[{district:'Jeceaba, MG', address:'Distrito Industrial, S/N', lat:-20.5389, lng:-43.9889, note:''}]},
+      {id:'mnx-10', name:'Suzano', segment:'Celulose e papel (multinacional brasileira)', website:'suzano.com.br', targets:['Produção','Expedição','Facilities'], notes:'',
+        units:[
+          {district:'Três Lagoas, MS', address:'A confirmar', lat:-20.7849, lng:-51.6784, note:'Um dos maiores complexos do grupo'},
+          {district:'Ribas do Rio Pardo, MS', address:'A confirmar', lat:-20.4433, lng:-53.7592, note:'Maior fábrica de linha única de eucalipto do mundo'}
+        ]},
+      {id:'mnx-11', name:'Mars Brasil', segment:'Alimentos/petfood (multinacional)', website:'mars.com', targets:['Produção','Expedição'], notes:'',
+        units:[{district:'Guararema, SP', address:'Rodovia Presidente Dutra', lat:-23.4136, lng:-46.0322, note:''}]},
+      {id:'mnx-12', name:'Arcor', segment:'Balas, chocolates e biscoitos (multinacional argentina)', website:'arcor.com.br', targets:['Produção','Expedição','Facilities'], notes:'',
+        units:[
+          {district:'Bragança Paulista, SP', address:'R. Fúlvio Salvador Pagani, 3101', lat:-22.9525, lng:-46.5417, note:'Matriz Brasil'},
+          {district:'Ipojuca, PE', address:'Rodovia PE-60, Km 12', lat:-8.4004, lng:-35.0619, note:'Balas, chicletes e pirulitos — (81) 3527-1520'}
+        ]},
+      {id:'mnx-13', name:'Nestlé', segment:'Alimentos (multinacional)', website:'nestle.com.br', targets:['Produção','Expedição','Facilities'], notes:'',
+        units:[
+          {district:'Araçatuba, SP', address:'A confirmar', lat:-21.2089, lng:-50.4328, note:'Laticínios'},
+          {district:'Caçapava, SP', address:'A confirmar', lat:-23.0989, lng:-45.7075, note:'Achocolatados e alimentos infantis'}
+        ]},
+      {id:'mnx-14', name:'Mondelez', segment:'Chocolates, biscoitos e bebidas em pó (multinacional)', website:'mondelezinternational.com', targets:['Produção','Expedição','Facilities'], notes:'',
+        units:[
+          {district:'Curitiba, PR', address:'Av. Juscelino Kubitschek de Oliveira, 13300', lat:-25.4284, lng:-49.2733, note:'Maior fábrica multicategoria da Mondelez no mundo'},
+          {district:'Vitória de Santo Antão, PE', address:'Rodovia Luiz Gonzaga BR-232', lat:-8.1189, lng:-35.2967, note:'CNPJ 10.144.076/0001-44 confirmado'}
+        ]},
+      {id:'mnx-15', name:'IFF Brasil (ex-Danisco)', segment:'Fabricação de aditivos de uso industrial (sabores/ingredientes)', website:'iff.com', targets:['Produção','Expedição'], notes:'CNPJ 46.278.016/0002-42 confirmado — unidade herdada da fusão com a Danisco.',
+        units:[{district:'Pirapozinho, SP', address:'Rua João de Abreu, 186 - Vila Santa Rosa', lat:-22.3689, lng:-51.6142, note:''}]},
+      {id:'mnx-16', name:'Refrescos Bandeirantes', segment:'Engarrafadora Coca-Cola', website:'', targets:['Produção','Expedição'], notes:'',
+        units:[
+          {district:'Anápolis, GO', address:'A confirmar', lat:-16.3281, lng:-48.9531, note:''},
+          {district:'Trindade, GO', address:'A confirmar', lat:-16.6499, lng:-49.4889, note:''}
+        ]},
+      {id:'mnx-17', name:'Solar FEMSA', segment:'Engarrafadora Coca-Cola', website:'', targets:['Produção','Expedição'], notes:'',
+        units:[
+          {district:'Tangará da Serra, MT', address:'A confirmar', lat:-14.6222, lng:-57.4930, note:''},
+          {district:'Lucas do Rio Verde, MT', address:'A confirmar', lat:-13.0587, lng:-55.9114, note:''},
+          {district:'Sinop, MT', address:'A confirmar', lat:-11.8642, lng:-55.5025, note:''}
+        ]}
     ]
   }
 };
@@ -651,6 +701,14 @@ async function loadCompanies(cityKey){
       if(seedHasMore && c[field]!==seedVal){ c[field]=seedVal; needsSave=true; }
     });
   });
+
+  // Limpeza: remove registros antigos e fragmentados da aba Multinacionais
+  // (id no formato mn-XX, substituídos pela versão consolidada mnx-XX).
+  if(cityKey==='multinacionais'){
+    const before = companies.length;
+    companies = companies.filter(c=>!/^mn-\d+$/.test(c.id));
+    if(companies.length !== before) needsSave = true;
+  }
 
   // Reconciliação: adiciona ao conjunto do usuário qualquer empresa nova
   // que eu tenha incluído na seed (por id) sem sobrescrever edições existentes.
@@ -791,8 +849,16 @@ function renderList(){
   }
   items.forEach(c=>{
     const s = STATUS_MAP[c.status];
+    const units = getUnits(c);
     const card = document.createElement('div');
     card.className = 'card' + (editingId===c.id?' selected':'');
+    const addrLine = units.length>1
+      ? `${units.length} unidades pelo Brasil`
+      : `${escapeHtml(c.district||'')}${c.district&&c.address?' &middot; ':''}${escapeHtml(c.address||'')}`;
+    const mapControl = units.length>1
+      ? `<select class="unit-select" data-unit-for="${c.id}">${units.map((u,i)=>`<option value="${i}">${escapeHtml(u.district)}</option>`).join('')}</select>
+         <button class="icon-btn" data-focus="${c.id}" data-unit-btn="1"><i class="ti ti-map-pin"></i> Ir</button>`
+      : `<button class="icon-btn" data-focus="${c.id}"><i class="ti ti-map-pin"></i> Ver no mapa</button>`;
     card.innerHTML = `
       <div class="card-top">
         <div>
@@ -801,7 +867,7 @@ function renderList(){
         </div>
         <div class="status-pill" style="--pill-color:${statusColor(c.status)}"><span class="dot"></span>${s.label}</div>
       </div>
-      <div class="card-addr">${escapeHtml(c.district||'')}${c.district&&c.address?' &middot; ':''}${escapeHtml(c.address||'')}${c.cnpj?` <span class="cnpj-badge">CNPJ ${escapeHtml(c.cnpj)}</span>`:''}</div>
+      <div class="card-addr">${addrLine}${c.cnpj?` <span class="cnpj-badge">CNPJ ${escapeHtml(c.cnpj)}</span>`:''}</div>
       <div class="card-contact">
         ${c.phone?`<span><i class="ti ti-phone"></i> ${escapeHtml(c.phone)}</span>`:''}
         ${c.employees?`<span><i class="ti ti-users"></i> ${c.employees.toLocaleString('pt-BR')} func.</span>`:''}
@@ -815,7 +881,7 @@ function renderList(){
         <select class="status-select" data-id="${c.id}">
           ${STATUSES.map(st=>`<option value="${st.key}" ${st.key===c.status?'selected':''}>${st.label}</option>`).join('')}
         </select>
-        <button class="icon-btn" data-focus="${c.id}"><i class="ti ti-map-pin"></i> Ver no mapa</button>
+        ${mapControl}
         <button class="icon-btn" data-edit="${c.id}"><i class="ti ti-pencil"></i> Editar</button>
       </div>
     `;
@@ -829,8 +895,19 @@ function renderList(){
       setStatus(sel.dataset.id, sel.value);
     });
   });
+  el.querySelectorAll('.unit-select').forEach(sel=>{
+    sel.addEventListener('click', e=>e.stopPropagation());
+  });
   el.querySelectorAll('[data-focus]').forEach(b=>{
-    b.addEventListener('click', e=>{ e.stopPropagation(); focusCompany(b.dataset.focus); });
+    b.addEventListener('click', e=>{
+      e.stopPropagation();
+      if(b.dataset.unitBtn){
+        const sel = document.querySelector(`.unit-select[data-unit-for="${b.dataset.focus}"]`);
+        focusCompany(b.dataset.focus, sel ? parseInt(sel.value,10) : 0);
+      }else{
+        focusCompany(b.dataset.focus);
+      }
+    });
   });
   el.querySelectorAll('[data-edit]').forEach(b=>{
     b.addEventListener('click', e=>{ e.stopPropagation(); openModal(b.dataset.edit); });
@@ -839,6 +916,10 @@ function renderList(){
 
 function escapeHtml(str){
   return String(str||'').replace(/[&<>"']/g, m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+}
+function getUnits(c){
+  if(Array.isArray(c.units) && c.units.length) return c.units;
+  return [{district:c.district||'', address:c.address||'', lat:c.lat, lng:c.lng, note:''}];
 }
 function normalizeUrl(url){
   const u = String(url||'').trim();
@@ -903,42 +984,50 @@ function renderMarkers(){
   markerIndex = {};
   const items = filteredCompanies();
   items.forEach(c=>{
-    if(typeof c.lat!=='number'||typeof c.lng!=='number') return;
-    const s = STATUS_MAP[c.status];
-    const marker = L.marker([c.lat,c.lng], {icon:pinIcon(statusColor(c.status))});
-    marker.bindPopup(`
-      <div style="font-family:'Inter',sans-serif;min-width:210px;max-width:240px;">
-        <div style="font-family:'Inter',sans-serif;font-weight:700;font-size:15px;margin-bottom:2px;">${escapeHtml(c.name)}</div>
-        <div style="font-size:11px;color:#7a92a8;text-transform:uppercase;letter-spacing:.3px;margin-bottom:4px;">${escapeHtml(c.segment||'—')}</div>
-        <div style="font-size:11.5px;color:#7a92a8;margin-bottom:8px;">${escapeHtml(c.district||'')}</div>
-        <div style="display:flex;gap:4px;flex-wrap:wrap;margin-bottom:8px;">
-          ${(c.targets&&c.targets.length) ? c.targets.map(t=>`<span style="font-size:9.5px;text-transform:uppercase;letter-spacing:.3px;padding:3px 7px;border-radius:4px;background:rgba(0,212,216,.10);color:#00d4d8;border:1px solid rgba(0,212,216,.25);">${escapeHtml(t)}</span>`).join('') : '<span style="font-size:10.5px;color:#4a6070;font-style:italic;">Alvo não definido</span>'}
+    const units = getUnits(c);
+    markerIndex[c.id] = [];
+    units.forEach((u,i)=>{
+      if(typeof u.lat!=='number'||typeof u.lng!=='number') return;
+      const marker = L.marker([u.lat,u.lng], {icon:pinIcon(statusColor(c.status))});
+      marker.bindPopup(`
+        <div style="font-family:'Inter',sans-serif;min-width:210px;max-width:240px;">
+          <div style="font-family:'Inter',sans-serif;font-weight:700;font-size:15px;margin-bottom:2px;">${escapeHtml(c.name)}</div>
+          <div style="font-size:11px;color:#7a92a8;text-transform:uppercase;letter-spacing:.3px;margin-bottom:4px;">${escapeHtml(c.segment||'—')}</div>
+          <div style="font-size:11.5px;color:#7a92a8;margin-bottom:2px;">${escapeHtml(u.district||'')}${u.address?' · '+escapeHtml(u.address):''}</div>
+          ${u.note?`<div style="font-size:10.5px;color:#00d4d8;margin-bottom:8px;">${escapeHtml(u.note)}</div>`:'<div style="margin-bottom:8px;"></div>'}
+          <div style="display:flex;gap:4px;flex-wrap:wrap;margin-bottom:8px;">
+            ${(c.targets&&c.targets.length) ? c.targets.map(t=>`<span style="font-size:9.5px;text-transform:uppercase;letter-spacing:.3px;padding:3px 7px;border-radius:4px;background:rgba(0,212,216,.10);color:#00d4d8;border:1px solid rgba(0,212,216,.25);">${escapeHtml(t)}</span>`).join('') : '<span style="font-size:10.5px;color:#4a6070;font-style:italic;">Alvo não definido</span>'}
+          </div>
+          ${c.phone?`<div style="font-size:11.5px;color:#7a92a8;margin-bottom:3px;">📞 ${escapeHtml(c.phone)}</div>`:''}
+          ${c.website?`<div style="font-size:11.5px;margin-bottom:8px;"><a href="${normalizeUrl(c.website)}" target="_blank" rel="noopener" style="color:#00d4d8;">${escapeHtml(c.website)}</a></div>`:''}
+          <select class="popup-status" data-id="${c.id}" style="width:100%;font-family:'Inter',sans-serif;font-weight:600;font-size:11px;padding:5px;border-radius:6px;background:#141f2c;color:#ffffff;border:1px solid rgba(255,255,255,.12);">
+            ${STATUSES.map(st=>`<option value="${st.key}" ${st.key===c.status?'selected':''}>${st.label}</option>`).join('')}
+          </select>
         </div>
-        ${c.phone?`<div style="font-size:11.5px;color:#7a92a8;margin-bottom:3px;">📞 ${escapeHtml(c.phone)}</div>`:''}
-        ${c.website?`<div style="font-size:11.5px;margin-bottom:8px;"><a href="${normalizeUrl(c.website)}" target="_blank" rel="noopener" style="color:#00d4d8;">${escapeHtml(c.website)}</a></div>`:''}
-        <select class="popup-status" data-id="${c.id}" style="width:100%;font-family:'Inter',sans-serif;font-weight:600;font-size:11px;padding:5px;border-radius:6px;background:#141f2c;color:#ffffff;border:1px solid rgba(255,255,255,.12);">
-          ${STATUSES.map(st=>`<option value="${st.key}" ${st.key===c.status?'selected':''}>${st.label}</option>`).join('')}
-        </select>
-      </div>
-    `);
-    marker.on('popupopen', ()=>{
-      const sel = document.querySelector(`.popup-status[data-id="${c.id}"]`);
-      if(sel) sel.addEventListener('change', ()=> setStatus(c.id, sel.value));
+      `);
+      marker.on('popupopen', ()=>{
+        const sel = document.querySelector(`.popup-status[data-id="${c.id}"]`);
+        if(sel) sel.addEventListener('change', ()=> setStatus(c.id, sel.value));
+      });
+      marker.on('click', ()=>{ editingId = c.id; renderList(); });
+      markerLayer.addLayer(marker);
+      markerIndex[c.id][i] = marker;
     });
-    marker.on('click', ()=>{ editingId = c.id; renderList(); });
-    markerLayer.addLayer(marker);
-    markerIndex[c.id] = marker;
   });
 }
 
-function focusCompany(id){
+function focusCompany(id, unitIndex){
   const c = companies.find(c=>c.id===id);
   if(!c) return;
   editingId = id;
   renderList();
-  if(typeof c.lat==='number' && typeof c.lng==='number'){
-    map.flyTo([c.lat,c.lng], 15, {duration:0.6});
-    const m = markerIndex[id];
+  const units = getUnits(c);
+  const idx = (typeof unitIndex==='number' && units[unitIndex]) ? unitIndex : 0;
+  const u = units[idx];
+  if(u && typeof u.lat==='number' && typeof u.lng==='number'){
+    map.flyTo([u.lat,u.lng], units.length>1 ? 6 : 15, {duration:0.6});
+    const markers = markerIndex[id];
+    const m = markers && markers[idx];
     if(m) setTimeout(()=>m.openPopup(), 650);
   }
 }
