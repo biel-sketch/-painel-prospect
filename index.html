@@ -461,7 +461,7 @@ async function loadCompanies(cityKey){
       companies = raw ? JSON.parse(raw) : [];
       if(!companies.length) throw new Error('empty');
     }catch(e){
-      companies = CITIES[cityKey].seed.map(c=>({...c, status:'none', notes:''}));
+      companies = CITIES[cityKey].seed.map(c=>({...c, status:'none'}));
     }
   }
 
@@ -469,6 +469,22 @@ async function loadCompanies(cityKey){
   companies.forEach(c=>{
     if(!Array.isArray(c.targets)){ c.targets = []; needsSave = true; }
     if(typeof c.website !== 'string'){ c.website = ''; needsSave = true; }
+  });
+
+  // Atualiza dados de catálogo (contato, funcionários, decisores) vindos da seed
+  // mais recente em registros já salvos, preservando o status que o usuário definiu.
+  const seedById = new Map((CITIES[cityKey].seed||[]).map(s=>[s.id, s]));
+  companies.forEach(c=>{
+    const seedCo = seedById.get(c.id);
+    if(!seedCo) return;
+    ['segment','district','address','phone','website','employees','notes'].forEach(field=>{
+      const seedVal = seedCo[field];
+      const curVal = c[field];
+      const seedHasMore = seedVal!==undefined && seedVal!==null && seedVal!=='' &&
+        (curVal===undefined || curVal===null || curVal==='' ||
+         (typeof seedVal==='string' && typeof curVal==='string' && seedVal.length>curVal.length));
+      if(seedHasMore && c[field]!==seedVal){ c[field]=seedVal; needsSave=true; }
+    });
   });
 
   // Reconciliação: adiciona ao conjunto do usuário qualquer empresa nova
