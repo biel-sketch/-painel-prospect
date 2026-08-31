@@ -405,6 +405,7 @@
           <label class="check-pill"><input type="checkbox" value="Expedição"> Expedição</label>
           <label class="check-pill"><input type="checkbox" value="Produção"> Produção</label>
           <label class="check-pill"><input type="checkbox" value="Facilities"> Facilities</label>
+          <label class="check-pill"><input type="checkbox" value="Reforma de Paletes"> Reforma de Paletes</label>
         </div>
       </div>
       <div class="field-row">
@@ -1018,7 +1019,7 @@ function filteredCompanies(){
   const term = searchTerm.trim().toLowerCase();
   return companies.filter(c=>{
     if(!activeStatusFilters.has(c.status)) return false;
-    if(segmentFilter && segmentFilter!=='Reforma de Paletes' && !(c.targets||[]).includes(segmentFilter)) return false;
+    if(segmentFilter && !(c.targets||[]).includes(segmentFilter)) return false;
     if(!term) return true;
     return (c.name+' '+c.district+' '+c.address+' '+c.segment).toLowerCase().includes(term);
   });
