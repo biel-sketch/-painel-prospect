@@ -8,6 +8,8 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.47.0/tabler-icons.min.css">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <style>
   :root{
@@ -93,6 +95,17 @@
   .city-tab.disabled{opacity:.4;cursor:not-allowed;}
   .city-tab.add-city{border-style:dashed;}
   .user-badge{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text-muted);white-space:nowrap;}
+  .sync-pill{
+    display:flex;align-items:center;gap:7px;font-family:var(--font-mono);font-size:11px;
+    color:var(--st-client);background:rgba(0,229,160,.10);border:1px solid rgba(0,229,160,.25);
+    padding:6px 12px;border-radius:100px;white-space:nowrap;
+  }
+  .sync-pill.syncing{color:var(--st-contact);background:rgba(245,158,11,.10);border-color:rgba(245,158,11,.25);}
+  .sync-pill.err{color:var(--st-lost);background:rgba(255,77,106,.10);border-color:rgba(255,77,106,.25);}
+  .sync-dot{width:6px;height:6px;border-radius:50%;background:var(--st-client);flex-shrink:0;}
+  .sync-pill.syncing .sync-dot{background:var(--st-contact);animation:sync-pulse 1s ease-in-out infinite;}
+  .sync-pill.err .sync-dot{background:var(--st-lost);}
+  @keyframes sync-pulse{0%,100%{opacity:1;}50%{opacity:.3;}}
 
   /* ---------- STATS STRIP (quadro de embarque) ---------- */
   .stats-board{
@@ -345,6 +358,7 @@
       <option value="">Todos os Segmentos</option>
     </select>
     <div class="city-tabs" id="cityTabs"></div>
+    <div class="sync-pill" id="sync-pill"><span class="sync-dot"></span><span id="sync-label">Sincronizando...</span></div>
     <div class="user-badge"><i class="ti ti-user-circle"></i> <span id="userLabel"></span></div>
     <button class="icon-btn" onclick="doLogout()" title="Sair"><i class="ti ti-logout"></i></button>
   </header>
@@ -653,41 +667,131 @@ let editingId = null;
 let activeStatusFilters = new Set(STATUSES.map(s=>s.key));
 let searchTerm = '';
 
-/* ============ STORAGE ============ */
-const FB_BASE = 'https://loginserv-painel-default-rtdb.firebaseio.com';
-function fbUrl(cityKey){ return `${FB_BASE}/prospeccao_${cityKey}.json`; }
-let syncTimer = null;
+/* ============================================================
+   SINCRONIZAÇÃO EM NUVEM (Firebase Realtime Database)
+   Mesma lógica usada no Painel de RH: checagem leve por timestamp,
+   merge por id (com "lápides" de exclusão) e cache local para
+   funcionar offline. Sincroniza automaticamente a cada 25s.
+   ============================================================ */
+const FB_BASE = 'https://mapa-comercial-50dc2-default-rtdb.firebaseio.com';
+const CLOUD_SYNC_INTERVAL = 25000;
 
-async function loadCompanies(cityKey){
-  let cloudData = null;
+let cloudSyncBusy = false;
+let cloudSyncTimer = null;
+let cloudSyncActive = false;
+let cloudLastSync = null;
+// Guarda, por cidade, o último "carimbo de hora" que sabemos estar na nuvem.
+// Antes de baixar tudo, checamos só esse valor (poucos bytes) — se não mudou,
+// ninguém alterou nada desde a última vez e evitamos a transferência completa.
+let lastKnownCloudTimestamp = {};
+
+function cloudBase(cityKey){ return `${FB_BASE}/prospeccao_${cityKey}`; }
+function cloudDataUrl(cityKey){ return cloudBase(cityKey)+'.json'; }
+function cloudMetaUrl(cityKey){ return cloudBase(cityKey)+'/_meta/lastUpdated.json'; }
+function localCacheKey(cityKey){ return `prospeccao:cache:${cityKey}`; }
+function pendingKey(cityKey){ return `prospeccao:pending:${cityKey}`; }
+function deletedKey(cityKey){ return `prospeccao:deleted:${cityKey}`; }
+
+function getDeletedIds(cityKey){
+  try{ return JSON.parse(localStorage.getItem(deletedKey(cityKey))||'[]'); }catch(e){ return []; }
+}
+function setDeletedIds(cityKey, arr){
+  try{ localStorage.setItem(deletedKey(cityKey), JSON.stringify(arr)); }catch(e){}
+}
+function addDeletedId(cityKey, id){
+  const arr = getDeletedIds(cityKey);
+  if(!arr.includes(id)){ arr.push(id); setDeletedIds(cityKey, arr); }
+}
+function mergeDeletedIds(a, b){
+  return Array.from(new Set([...(a||[]), ...(b||[])]));
+}
+
+function markPendingChanges(cityKey){ try{ localStorage.setItem(pendingKey(cityKey),'1'); }catch(e){} }
+function clearPendingChanges(cityKey){ try{ localStorage.removeItem(pendingKey(cityKey)); }catch(e){} }
+function hasPendingChanges(cityKey){ try{ return localStorage.getItem(pendingKey(cityKey))==='1'; }catch(e){ return false; } }
+
+function saveLocalCache(cityKey, list){
+  try{ localStorage.setItem(localCacheKey(cityKey), JSON.stringify(list)); }catch(e){ console.error('Falha ao salvar localmente', e); }
+}
+function loadLocalCache(cityKey){
   try{
-    const res = await fetch(fbUrl(cityKey));
-    if(res.ok){
-      const json = await res.json();
-      if(json && Array.isArray(json) && json.length) cloudData = json;
-    }
-  }catch(e){ /* offline ou Firebase indisponível — segue com cache local */ }
+    const raw = localStorage.getItem(localCacheKey(cityKey));
+    return raw ? JSON.parse(raw) : null;
+  }catch(e){ return null; }
+}
 
-  if(cloudData){
-    companies = cloudData;
-  }else{
-    try{
-      const raw = localStorage.getItem(`prospeccao:companies:${cityKey}`);
-      companies = raw ? JSON.parse(raw) : [];
-      if(!companies.length) throw new Error('empty');
-    }catch(e){
-      companies = CITIES[cityKey].seed.map(c=>({...c, status:'none'}));
-    }
-  }
+function cloudGet(cityKey){
+  return fetch(cloudDataUrl(cityKey)+'?_ts='+Date.now(), {cache:'no-store'}).then(r=>{
+    if(!r.ok) throw new Error('HTTP '+r.status);
+    return r.json();
+  });
+}
+function cloudGetTimestamp(cityKey){
+  return fetch(cloudMetaUrl(cityKey)+'?_ts='+Date.now(), {cache:'no-store'}).then(r=>{
+    if(!r.ok) throw new Error('HTTP '+r.status);
+    return r.json();
+  });
+}
+function cloudPut(cityKey, payload){
+  return fetch(cloudDataUrl(cityKey), {
+    method:'PUT',
+    headers:{'Content-Type':'application/json'},
+    body: JSON.stringify(payload)
+  }).then(r=>{
+    if(!r.ok) throw new Error('HTTP '+r.status);
+    return r.json();
+  });
+}
+// Sempre que gravamos o estado inteiro na nuvem, carimbamos com a hora atual —
+// assim, na próxima checagem leve, já sabemos se algo mudou desde então.
+function stampAndPut(cityKey, payload){
+  const ts = Date.now();
+  payload._meta = {lastUpdated: ts};
+  return cloudPut(cityKey, payload).then(()=>{
+    lastKnownCloudTimestamp[cityKey] = ts;
+    return payload;
+  });
+}
 
+// Compatibilidade: o banco antigo guardava um array puro (sem deletedIds/_meta).
+function normalizeCloudPayload(raw){
+  if(Array.isArray(raw)) return {companies: raw, deletedIds: []};
+  if(raw && typeof raw === 'object') return {companies: raw.companies||[], deletedIds: raw.deletedIds||[], _meta: raw._meta};
+  return {companies: [], deletedIds: []};
+}
+
+// Merge por id: em conflito, a versão da nuvem vence (é a última confirmada);
+// empresas que só existem localmente (recém-criadas, ainda não enviadas) são
+// preservadas. Itens marcados como excluídos (localmente ou na nuvem) somem.
+function mergeCompaniesArrays(cloudArr, localArr, deletedSet){
+  const map = {};
+  (localArr||[]).forEach(c=>{ if(c && c.id) map[c.id] = c; });
+  (cloudArr||[]).forEach(c=>{ if(c && c.id) map[c.id] = c; });
+  const delSet = new Set(deletedSet||[]);
+  return Object.values(map).filter(c=>!delSet.has(c.id));
+}
+
+function setSyncIndicator(status, label){
+  const pill = document.getElementById('sync-pill');
+  const labelEl = document.getElementById('sync-label');
+  if(!pill || !labelEl) return;
+  pill.classList.remove('syncing','err');
+  if(status==='syncing') pill.classList.add('syncing');
+  if(status==='err') pill.classList.add('err');
+  labelEl.textContent = label;
+}
+
+// Aplica reconciliações de catálogo (dados atualizados na seed, limpeza de ids
+// antigos e inclusão de empresas novas da seed) preservando status/edições do
+// usuário e respeitando exclusões já feitas. Retorna true se algo mudou.
+function reconcileWithSeed(cityKey){
   let needsSave = false;
+
   companies.forEach(c=>{
     if(!Array.isArray(c.targets)){ c.targets = []; needsSave = true; }
     if(typeof c.website !== 'string'){ c.website = ''; needsSave = true; }
   });
 
-  // Atualiza dados de catálogo (contato, funcionários, decisores) vindos da seed
-  // mais recente em registros já salvos, preservando o status que o usuário definiu.
   const seedById = new Map((CITIES[cityKey].seed||[]).map(s=>[s.id, s]));
   companies.forEach(c=>{
     const seedCo = seedById.get(c.id);
@@ -702,57 +806,147 @@ async function loadCompanies(cityKey){
     });
   });
 
-  // Limpeza: remove registros antigos e fragmentados da aba Multinacionais
-  // (id no formato mn-XX, substituídos pela versão consolidada mnx-XX).
   if(cityKey==='multinacionais'){
     const before = companies.length;
     companies = companies.filter(c=>!/^mn-\d+$/.test(c.id));
     if(companies.length !== before) needsSave = true;
   }
 
-  // Reconciliação: adiciona ao conjunto do usuário qualquer empresa nova
-  // que eu tenha incluído na seed (por id) sem sobrescrever edições existentes.
   const existingIds = new Set(companies.map(c=>c.id));
+  const deleted = new Set(getDeletedIds(cityKey));
   (CITIES[cityKey].seed||[]).forEach(seedCo=>{
-    if(!existingIds.has(seedCo.id)){
+    if(!existingIds.has(seedCo.id) && !deleted.has(seedCo.id)){
       companies.push({...seedCo, status: seedCo.status||'none', notes: seedCo.notes||''});
       needsSave = true;
     }
   });
 
-  if(needsSave) await saveCompanies();
-  restartAutoSync();
+  return needsSave;
 }
 
-async function saveCompanies(){
-  try{
-    localStorage.setItem(`prospeccao:companies:${currentCity}`, JSON.stringify(companies));
-  }catch(e){ console.error('Falha ao salvar localmente', e); }
-  try{
-    await fetch(fbUrl(currentCity), {
-      method: 'PUT',
-      headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify(companies)
-    });
-  }catch(e){ console.error('Falha ao sincronizar com a nuvem', e); }
+async function loadCompanies(cityKey){
+  const cached = loadLocalCache(cityKey);
+  companies = (cached && cached.length) ? cached : CITIES[cityKey].seed.map(c=>({...c, status:'none'}));
+  reconcileWithSeed(cityKey);
+  saveLocalCache(cityKey, companies);
+
+  stopCloudSync();
+  startCloudSync(cityKey);
 }
 
-function restartAutoSync(){
-  if(syncTimer) clearInterval(syncTimer);
-  syncTimer = setInterval(async ()=>{
-    if(!overlay.classList.contains('hidden')) return; // não sobrescreve edição em andamento
-    try{
-      const res = await fetch(fbUrl(currentCity));
-      if(!res.ok) return;
-      const json = await res.json();
-      if(json && Array.isArray(json) && JSON.stringify(json)!==JSON.stringify(companies)){
-        companies = json;
-        localStorage.setItem(`prospeccao:companies:${currentCity}`, JSON.stringify(companies));
-        renderAll();
-      }
-    }catch(e){ /* silencioso */ }
-  }, 15000);
+async function syncFromCloud(cityKey){
+  if(cloudSyncBusy) return;
+  cloudSyncBusy = true;
+
+  if(hasPendingChanges(cityKey)){
+    cloudSyncBusy = false;
+    await pushToCloud(cityKey);
+    return;
+  }
+
+  async function fullFetch(){
+    setSyncIndicator('syncing', 'Sincronizando...');
+    const raw = await cloudGet(cityKey);
+    const cloud = normalizeCloudPayload(raw);
+    const mergedDel = mergeDeletedIds(getDeletedIds(cityKey), cloud.deletedIds);
+    companies = mergeCompaniesArrays(cloud.companies, companies, mergedDel);
+    setDeletedIds(cityKey, mergedDel);
+    reconcileWithSeed(cityKey);
+    saveLocalCache(cityKey, companies);
+    if(cityKey===currentCity) renderAll();
+    cloudLastSync = new Date();
+    lastKnownCloudTimestamp[cityKey] = (cloud._meta && cloud._meta.lastUpdated) || Date.now();
+    setSyncIndicator('ok', 'Sincronizado');
+  }
+
+  try{
+    const remoteTs = await cloudGetTimestamp(cityKey);
+    if(remoteTs && remoteTs === lastKnownCloudTimestamp[cityKey]){
+      // Nada mudou na nuvem desde a última vez — economiza a transferência completa.
+      setSyncIndicator('ok', 'Sincronizado');
+    }else{
+      await fullFetch();
+    }
+  }catch(e){
+    try{ await fullFetch(); }
+    catch(e2){
+      console.error('Falha ao sincronizar', e2);
+      setSyncIndicator('err', 'Sem conexão');
+    }
+  }finally{
+    cloudSyncBusy = false;
+  }
 }
+
+async function pushToCloud(cityKey){
+  setSyncIndicator('syncing', 'Salvando...');
+  saveLocalCache(cityKey, companies);
+  try{
+    const remoteTs = await cloudGetTimestamp(cityKey);
+    let payload = { companies, deletedIds: getDeletedIds(cityKey) };
+    if(!(remoteTs && remoteTs === lastKnownCloudTimestamp[cityKey])){
+      // Alguém alterou a nuvem desde a última vez que checamos — mescla antes de sobrescrever,
+      // pra não perder edições concorrentes de outros usuários.
+      const raw = await cloudGet(cityKey);
+      const cloud = normalizeCloudPayload(raw);
+      const mergedDel = mergeDeletedIds(getDeletedIds(cityKey), cloud.deletedIds);
+      companies = mergeCompaniesArrays(cloud.companies, companies, mergedDel);
+      setDeletedIds(cityKey, mergedDel);
+      payload = { companies, deletedIds: mergedDel };
+    }
+    await stampAndPut(cityKey, payload);
+    saveLocalCache(cityKey, companies);
+    clearPendingChanges(cityKey);
+    cloudLastSync = new Date();
+    if(cityKey===currentCity) renderAll();
+    setSyncIndicator('ok', 'Sincronizado');
+  }catch(e){
+    console.error('Falha ao salvar na nuvem', e);
+    markPendingChanges(cityKey);
+    setSyncIndicator('err', 'Alterações pendentes');
+  }
+}
+
+// Chame depois de qualquer criação/edição/exclusão para salvar na nuvem
+// imediatamente, sem esperar o ciclo automático de 25s.
+async function syncAfterChange(){
+  if(cloudSyncTimer) clearTimeout(cloudSyncTimer);
+  await pushToCloud(currentCity);
+  scheduleNextSync(currentCity);
+}
+
+function scheduleNextSync(cityKey){
+  if(cloudSyncTimer) clearTimeout(cloudSyncTimer);
+  cloudSyncTimer = setTimeout(async ()=>{
+    if(cityKey !== currentCity){ return; } // a cidade foi trocada nesse meio-tempo
+    await syncFromCloud(cityKey);
+    scheduleNextSync(cityKey);
+  }, CLOUD_SYNC_INTERVAL);
+}
+
+function startCloudSync(cityKey){
+  cloudSyncActive = true;
+  syncFromCloud(cityKey).finally(()=> scheduleNextSync(cityKey));
+}
+
+function stopCloudSync(){
+  cloudSyncActive = false;
+  if(cloudSyncTimer) clearTimeout(cloudSyncTimer);
+  cloudSyncTimer = null;
+}
+
+// Enquanto a aba está em segundo plano, pausa a sincronização automática
+// (economiza dados); ao voltar, sincroniza na hora e retoma o ciclo normal.
+document.addEventListener('visibilitychange', ()=>{
+  if(!cloudSyncActive) return;
+  if(document.hidden){
+    if(cloudSyncTimer) clearTimeout(cloudSyncTimer);
+  }else{
+    syncFromCloud(currentCity).finally(()=> scheduleNextSync(currentCity));
+  }
+});
+window.addEventListener('online', ()=> syncFromCloud(currentCity));
+window.addEventListener('offline', ()=> setSyncIndicator('err', 'Sem conexão'));
 
 /* ============ RENDER: TABS ============ */
 function renderCityTabs(){
@@ -955,8 +1149,8 @@ async function setStatus(id, status){
   const c = companies.find(c=>c.id===id);
   if(!c) return;
   c.status = status;
-  await saveCompanies();
   renderStats(); renderList(); renderMarkers();
+  await syncAfterChange();
 }
 
 /* ============ MAP ============ */
@@ -1150,18 +1344,19 @@ form.addEventListener('submit', async e=>{
       lng: center[1]+jitter()
     });
   }
-  await saveCompanies();
   closeModal();
   renderAll();
+  await syncAfterChange();
 });
 
 document.getElementById('deleteBtn').onclick = async ()=>{
   if(!editingId) return;
   if(!confirm('Excluir esta empresa da lista de prospecção?')) return;
+  addDeletedId(currentCity, editingId);
   companies = companies.filter(c=>c.id!==editingId);
-  await saveCompanies();
   closeModal();
   renderAll();
+  await syncAfterChange();
 };
 
 /* ============ SEARCH ============ */
@@ -1190,35 +1385,79 @@ function renderAll(){
   renderAll();
 })();
 
-/* ============ AUTH ============ */
-const USERS = [
-  {user:'Gabriel', senha:'adm', role:'superadmin'},
-  {user:'Guilherme', senha:'Login@982', role:'admin'},
-  {user:'Login', senha:'Login@982', role:'admin'},
+/* ============ AUTH (Firebase Authentication) ============ */
+// Mesmo projeto Firebase do banco de dados (mapa-comercial-50dc2).
+// A apiKey é uma chave pública de cliente — a segurança de verdade vem do
+// Firebase Authentication (senhas nunca ficam no código) e das Regras do banco.
+const firebaseConfig = {
+  apiKey: "AIzaSyD5LFOl-BiyrXEvZlvxM1jm4GLGs_4P898",
+  authDomain: "mapa-comercial-50dc2.firebaseapp.com",
+  databaseURL: "https://mapa-comercial-50dc2-default-rtdb.firebaseio.com",
+  projectId: "mapa-comercial-50dc2",
+  storageBucket: "mapa-comercial-50dc2.firebasestorage.app",
+  messagingSenderId: "409160940795",
+  appId: "1:409160940795:web:3490ed5dc0e6f23af8445e",
+  measurementId: "G-JG3DY3J409"
+};
+firebase.initializeApp(firebaseConfig);
+const firebaseAuth = firebase.auth();
+
+// Mapeia o que a pessoa digita (usuário OU e-mail) para o e-mail real cadastrado
+// no Firebase Authentication e o nome exibido no painel. As senhas são validadas
+// pelo próprio Firebase — precisam ser cadastradas antes no Console
+// (Authentication → Users) com esses mesmos e-mails.
+const AUTH_USERS = [
+  {user:'comercial', email:'comercial@loginserv.com.br', name:'Guilherme'},
+  {user:'joao',       email:'joaovitor@loginserv.com.br', name:'Joao'},
+  {user:'joaovitor',  email:'joaovitor@loginserv.com.br', name:'Joao'},
+  {user:'gabriel',    email:'gabriel@loginserv.com.br',   name:'Gabriel'},
 ];
-const SESSION_KEY = 'painel-prospeccao-session';
+function findAuthUser(input){
+  const key = (input||'').trim().toLowerCase();
+  return AUTH_USERS.find(u=>u.user===key || u.email.toLowerCase()===key);
+}
+
+let loginInProgress = false;
 
 function doLogin(){
-  const u = (document.getElementById('login-user').value||'').trim();
+  if(loginInProgress) return;
+  const uInput = document.getElementById('login-user').value;
   const pw = document.getElementById('login-pw').value;
-  const found = USERS.find(x=>x.user.toLowerCase()===u.toLowerCase() && x.senha===pw);
-  if(!found){
-    document.getElementById('login-err').textContent = 'Usuário ou senha incorretos.';
+  const errEl = document.getElementById('login-err');
+  const btn = document.querySelector('.btn-login');
+
+  const found = findAuthUser(uInput);
+  if(!found || !pw){
+    errEl.textContent = 'Usuário ou senha incorretos.';
     document.getElementById('login-pw').value = '';
     return;
   }
-  localStorage.setItem(SESSION_KEY, JSON.stringify({user:found.user, role:found.role, loginAt:Date.now()}));
-  document.getElementById('login-pw').value = '';
-  document.getElementById('login-err').textContent = '';
-  enterApp(found.user);
+
+  errEl.textContent = '';
+  loginInProgress = true;
+  if(btn) btn.disabled = true;
+
+  firebaseAuth.signInWithEmailAndPassword(found.email, pw)
+    .catch(err=>{
+      console.error('Erro de login:', err);
+      errEl.textContent = 'Usuário ou senha incorretos.';
+      document.getElementById('login-pw').value = '';
+    })
+    .finally(()=>{
+      loginInProgress = false;
+      if(btn) btn.disabled = false;
+    });
 }
+
 function doLogout(){
-  localStorage.removeItem(SESSION_KEY);
+  stopCloudSync();
+  firebaseAuth.signOut();
   document.getElementById('app').style.display = 'none';
   document.getElementById('login-screen').style.display = 'flex';
   document.getElementById('login-user').value = '';
   document.getElementById('login-pw').value = '';
 }
+
 function enterApp(userName){
   document.getElementById('login-screen').style.display = 'none';
   document.getElementById('app').style.display = 'flex';
@@ -1226,21 +1465,23 @@ function enterApp(userName){
   if(el) el.textContent = userName;
   setTimeout(()=>{ if(typeof map!=='undefined' && map) map.invalidateSize(); }, 50);
 }
-function checkSession(){
-  try{
-    const raw = localStorage.getItem(SESSION_KEY);
-    if(!raw) return false;
-    const sess = JSON.parse(raw);
-    if(sess && sess.user && (Date.now()-(sess.loginAt||0)) <= 7*24*60*60*1000){
-      enterApp(sess.user);
-      return true;
+
+// Sessão é controlada pelo próprio Firebase Auth (persiste no navegador até
+// o usuário sair — sem precisar de lógica de expiração manual em localStorage).
+firebaseAuth.onAuthStateChanged(user=>{
+  if(user){
+    const found = findAuthUser(user.email||'');
+    if(!found){
+      // E-mail autenticado mas não mapeado em AUTH_USERS — por segurança, desloga.
+      firebaseAuth.signOut();
+      return;
     }
-  }catch(e){}
-  return false;
-}
-if(!checkSession()){
-  document.getElementById('login-screen').style.display = 'flex';
-}
+    enterApp(found.name);
+  }else{
+    document.getElementById('app').style.display = 'none';
+    document.getElementById('login-screen').style.display = 'flex';
+  }
+});
 </script>
 </body>
 </html>
